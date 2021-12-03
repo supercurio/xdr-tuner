@@ -1,0 +1,13 @@
+{
+  "reorder_channels": true,
+  "maximum": {
+    "red": 1,
+    "green": 0.945,
+    "blue": 0.955
+  },
+  "gamma": {
+    "red": 1.0,
+    "green": 1.0,
+    "blue": 1.0
+  }
+}
