@@ -138,7 +138,8 @@ types known.
 
 ## Credits
 
-Thanks to @timsutton with [customdisplayprofiles](https://github.com/timsutton/customdisplayprofiles) and
+Thanks to [Timothy Sutton](https://github.com/timsutton) with
+[customdisplayprofiles](https://github.com/timsutton/customdisplayprofiles) and
 Chromium authors with [color_profile_manager_mac.py](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/content/test/gpu/gpu_tests/color_profile_manager_mac.py)
 for the inspiration and sample code.
 
