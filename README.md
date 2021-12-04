@@ -39,6 +39,20 @@ you will be able to launch the script with the following commands.
 This will create a custom profile based on your system-generated one
 for your display, and apply it immediately.
 
+### Re-apply current custom profile
+`./xdr-tuner.py --re-apply`
+
+Useful after changing display preset in Display Preferences.
+
+### Enable auto-load of profile at start for your user
+`./xdr-tuner.py --auto-apply`
+
+Creates a LaunchAgents plist file to automatically load the custom profile
+set currently after user login.  
+It will call XDR Tuner from its current directory.
+
+Use `./xdr-tuner.py --remove-auto-apply` command to disable auto-apply.
+
 ### Customize config and apply automatically
 `./xdr-tuner.py --loop`
 
@@ -61,7 +75,7 @@ Changing the gamma to values lower than 1 might help with legibility
 when the screen is very dim.
 
 ## Reset to factory profile
-`./xdr-tuner.py --reset`
+`./xdr-tuner.py --factory`
 
 ## Set and apply an existing ICC profile
 `./xdr-tuner.py -a path/to/your-profile.icc`
@@ -79,12 +93,11 @@ profile as reference, with no difference compared to factory calibration.
 
 * This utility was not tested yet with multiple displays connected.  
   Support will be added in a future version.
-* The profiles are not re-applied automatically at boot at the moment.   
-  Coming in a next version - stay tuned for updates
 * Switching between presets in Display Preferences resets the tuning,
   which needs to be re-applied manually. It looks like a bug in macOS
   color management, which should re-apply the current profile by itself.  
-  I don't know how to fix this currently.
+  I recommend using the command `./xdr-tuner.py --r` to re-apply the
+  custom profile.
 * No GUI: someone experienced with macOS gui app development is welcome
   to contribute a gui for this, or use this script as a mean to generate and
   apply the profiles. The license is liberal so maybe you will create your

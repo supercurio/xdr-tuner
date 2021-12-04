@@ -19,7 +19,7 @@ import json
 from optparse import OptionParser
 import os
 
-version = "0.1"
+version = "0.2"
 
 color_sync_framework = '/System/Library/Frameworks/ApplicationServices.framework/' \
                        'Versions/A/Frameworks/ColorSync.framework'
@@ -71,6 +71,16 @@ def get_factory_profile_path():
     device_info = get_device_info()
     factory_profile_url = device_info['FactoryProfiles']['1']['DeviceProfileURL']
     return Foundation.CFURLCopyFileSystemPath(factory_profile_url, kCFURLPOSIXPathStyle)
+
+
+def get_custom_profile_path():
+    device_info = get_device_info()
+    custom_profiles = device_info.get('CustomProfiles')
+    if custom_profiles:
+        factory_profile_url = custom_profiles['1']
+        return Foundation.CFURLCopyFileSystemPath(factory_profile_url, kCFURLPOSIXPathStyle)
+    else:
+        return None
 
 
 def set_display_custom_profile(profile_path):
@@ -137,6 +147,23 @@ def read_config(config_file):
     return json.load(open(config_file, 'r'))
 
 
+def set_auto_apply(status):
+    plist_file = os.path.expanduser('~') + "/Library/LaunchAgents/xdr-tuner-auto-apply.plist"
+    if status:
+        os.system("plutil -create xml1 " + plist_file)
+        os.system("plutil -insert \"Label\" -string \"XDR Tuner\" " + plist_file)
+        os.system("plutil -insert \"ProgramArguments\" -array " + plist_file)
+        os.system("plutil -insert \"ProgramArguments.0\" -string \"{}\" ".format(os.path.realpath(__file__))
+                  + plist_file)
+        os.system("plutil -insert \"ProgramArguments.1\" -string \"-r\" " + plist_file)
+        os.system("plutil -insert \"RunAtLoad\" -bool YES " + plist_file)
+    else:
+        try:
+            os.remove(plist_file)
+        except OSError:
+            print("No auto-apply to remove")
+
+
 def signal_handler(sig, frame):
     print('Stopped the tuning loop.')
     sys.exit(0)
@@ -158,9 +185,15 @@ def main():
                       help="read config from a custom JSON file")
     parser.add_option("-l", "--loop", dest="loop", action="store_true", default=False,
                       help="apply the config in a loop until interrupted")
-    parser.add_option("-r", "--reset", dest="reset", action="store_true", default=False,
+    parser.add_option("-f", "--factory", dest="factory", action="store_true", default=False,
                       help="reset to factory profile")
     parser.add_option("-a", "--apply", dest="apply_icc", default="", help="apply ICC profile")
+    parser.add_option("-r", "--re-apply", dest="re_apply", action="store_true", default=False,
+                      help="re-apply last custom profile set")
+    parser.add_option("-t", "--auto-apply", dest="auto_apply", action="store_true", default=False,
+                      help="enable auto load of custom profile at start")
+    parser.add_option("-u", "--remove-auto-apply", dest="remove_auto_apply", action="store_true", default=False,
+                      help="disable auto load of custom profile at start")
     (options, _) = parser.parse_args()
 
     if options.apply_icc:
@@ -168,9 +201,28 @@ def main():
         set_display_custom_profile(options.apply_icc)
         return
 
-    if options.reset:
+    if options.factory:
         print("Reset to factory profile")
         set_display_custom_profile(None)
+        return
+
+    if options.re_apply:
+        current_custom_profile = get_custom_profile_path()
+        if current_custom_profile:
+            print("Reapply custom profile: " + current_custom_profile)
+            set_display_custom_profile(current_custom_profile)
+        else:
+            print("No custom profile set to re-apply")
+        return
+
+    if options.auto_apply:
+        print("Enable loading of custom profile at start")
+        set_auto_apply(True)
+        return
+
+    if options.remove_auto_apply:
+        print("Disable loading of custom profile at start")
+        set_auto_apply(False)
         return
 
     out_file = options.out_file
